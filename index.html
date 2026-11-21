@@ -86,7 +86,8 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
 /* ----- 폰 컨트롤러 화면 ----- */
 #pad{display:none}
 body.pad-mode > :not(#pad):not(script){display:none!important}
-body.pad-mode #pad{display:block;position:fixed;inset:0;background:radial-gradient(circle at 50% 30%,#1d3350,#0b1422)}
+body.pad-mode #pad{display:block;position:fixed;inset:0;overflow:hidden;background:radial-gradient(circle at 50% 30%,#1d3350,#0b1422)}
+#padStage{position:absolute;left:50%;top:50%;width:100vw;height:100vh;transform:translate(-50%,-50%);transform-origin:50% 50%}
 #padTop{position:absolute;left:0;right:0;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:center;gap:10px;align-items:center;font-size:14px;padding:0 120px}
 #padStatus{padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.1)}
 #padStatus.ok{background:rgba(76,217,100,.25)}#padStatus.bad{background:rgba(255,69,58,.3)}#padStatus.wait{background:rgba(255,214,10,.2)}
@@ -109,7 +110,7 @@ body.pad-mode #pad{display:block;position:fixed;inset:0;background:radial-gradie
 #padStick.show{display:flex}
 #padKnob{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid #fff;pointer-events:none}
 #padToast{position:absolute;left:50%;top:62px;transform:translateX(-50%);font-size:13px;background:rgba(0,0,0,.6);padding:6px 12px;border-radius:8px;opacity:0;transition:opacity .3s;white-space:nowrap}
-#padStart{position:fixed;inset:0;display:flex;align-items:safe center;justify-content:center;background:rgba(8,14,24,.92);padding:16px;overflow-y:auto;touch-action:pan-y;z-index:5}
+#padStart{position:absolute;inset:0;display:flex;align-items:safe center;justify-content:center;background:rgba(8,14,24,.92);padding:16px;overflow-y:auto;touch-action:pan-y;z-index:5}
 #padStart .card{max-width:460px}
 #padCodeRow input{width:100%;font-size:26px;padding:10px;border-radius:10px;border:0;text-align:center;letter-spacing:4px;font-family:inherit}
 #padHint{font-size:12px;opacity:.75;margin-top:8px;line-height:1.5}
@@ -187,7 +188,7 @@ body.pad-mode #pad{display:block;position:fixed;inset:0;background:radial-gradie
   </div>
 </div>
 
-<div id="pad">
+<div id="pad"><div id="padStage">
   <div id="padTop"><span id="padStatus" class="wait">대기 중</span><span id="padSensor">센서 없음</span></div>
   <div id="padRead"><div>고각<b id="pElev">–</b></div><div>방위<b id="pYaw">–</b></div><div>파워<b id="pPow">0</b></div></div>
   <div id="padStick"><div id="padKnob"></div></div>
@@ -201,11 +202,10 @@ body.pad-mode #pad{display:block;position:fixed;inset:0;background:radial-gradie
       <p class="sub">이 폰이 PC 게임 화면의 조종기가 됩니다.</p>
       <div id="padCodeRow"><input id="padCode" inputmode="numeric" maxlength="8" placeholder="연결 코드 6자리"></div>
       <button class="go" id="padGo">연결하고 시작</button>
-      <div id="padHint">· 폰을 가로로 돌려 핸들처럼 쥐세요. 시작하면 지금 자세가 기준(영점)이 됩니다.<br>· 좌우로 기울이면 포탑 회전, 윗부분을 몸 쪽으로 당기면 포신이 올라가요.<br>· iPhone은 '동작 및 방향' 권한을 허용해 주세요.</div>
+      <div id="padHint">· 폰을 가로로 돌려 핸들처럼 쥐세요. 시작하면 지금 자세가 기준(영점)이 됩니다.<br>· 폰의 <b>화면 자동 회전은 꺼 두면</b> 더 안정적이에요. (꺼져 있어도 화면은 알아서 가로로 맞춰져요)<br>· 좌우로 기울이면 포탑 회전, 윗부분을 몸 쪽으로 당기면 포신이 올라가요.<br>· iPhone은 '동작 및 방향' 권한을 허용해 주세요.</div>
     </div>
   </div>
-  <div id="padRotate"><div class="ph"></div>폰을 가로로 돌려 주세요</div>
-</div>
+</div></div>
 
 <div id="rotate"><div class="ph"></div>폰을 가로로 돌려 주세요</div>
 
@@ -230,24 +230,44 @@ window.TF = (function () {
     if (typeof window.orientation === 'number') return window.orientation;
     return 0;
   }
+  /* 기울기 읽기
+     ※ 화면 자동 회전에 휘둘리지 않도록, '쥔 방향(frame)'은 영점 맞출 때 중력 방향으로 한 번 정하고 고정.
+        이후 화면이 돌아가도(가로↔세로, 가로 180° 뒤집힘) 조작 방향은 그대로 유지됨 */
+  function holdFrame(gx, gy) {               // 중력으로 폰을 어느 방향으로 쥐었는지 판단 (0/90/180/270)
+    if (Math.max(Math.abs(gx), Math.abs(gy)) < 0.25) return null;    // 거의 눕혀서 판단 불가
+    if (Math.abs(gx) >= Math.abs(gy)) return gx < 0 ? 90 : 270;      // 가로: 윗부분이 왼쪽(90) / 오른쪽(270)
+    return gy < 0 ? 0 : 180;                                          // 세로
+  }
   function makeTiltReader() {
-    const s = { g: { x: 0, y: -1, z: 0 }, roll: 0, pitch: 0, roll0: 0, pitch0: 50, got: false, zeroed: false, last: 0, onFirst: null };
+    const s = { g: { x: 0, y: -1, z: 0 }, roll: 0, pitch: 0, roll0: 0, pitch0: 50, frame: null,
+      got: false, zeroed: false, last: 0, onFirst: null, onFrame: null };
+    function calc() {
+      const n = Math.hypot(s.g.x, s.g.y, s.g.z) || 1;
+      const gx = s.g.x / n, gy = s.g.y / n, gz = s.g.z / n;
+      const ang = (s.frame != null ? s.frame : (holdFrame(gx, gy) ?? screenAngle())) * DEG;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
+      const sx = gx * ca - gy * sa, sy = gx * sa + gy * ca;   // Rz(+angle): 가로(90°)면 쥔 방향 오른쪽 = 기기 아래쪽
+      s.roll = Math.asin(clamp(sx, -1, 1)) / DEG;             // 핸들 돌리기 (오른쪽 아래로 +)
+      s.pitch = Math.atan2(-sy, -gz) / DEG;                   // 0=눕힘, 90=세움
+    }
     s.feed = function (e) {
       if (e.beta == null || e.gamma == null) return;
       const b = e.beta * DEG, g = e.gamma * DEG;
-      // 기기 좌표계 중력 방향 (beta·gamma를 그대로 쓰면 가로모드/±90°에서 튐 → 벡터로 변환)
+      // 기기 좌표계 중력 방향 (beta·gamma를 그대로 쓰면 ±90°에서 튐 → 벡터로 변환). 필터도 기기 좌표계에서
       const gx = Math.cos(b) * Math.sin(g), gy = -Math.sin(b), gz = -Math.cos(b) * Math.cos(g);
-      // 화면 회전 각도만큼 돌려서 '화면 기준' 좌표로
-      const a = screenAngle() * DEG, ca = Math.cos(a), sa = Math.sin(a);
-      const sx = gx * ca - gy * sa, sy = gx * sa + gy * ca;   // Rz(+angle): 가로(90°)면 화면 오른쪽 = 기기 아래쪽
-      s.g.x = lerp(s.g.x, sx, 0.22); s.g.y = lerp(s.g.y, sy, 0.22); s.g.z = lerp(s.g.z, gz, 0.22);
-      const n = Math.hypot(s.g.x, s.g.y, s.g.z) || 1;
-      s.roll = Math.asin(clamp(s.g.x / n, -1, 1)) / DEG;            // 핸들 돌리기 (오른쪽 아래로 +)
-      s.pitch = Math.atan2(-s.g.y / n, -s.g.z / n) / DEG;           // 0=눕힘, 90=세움
+      s.g.x = lerp(s.g.x, gx, 0.22); s.g.y = lerp(s.g.y, gy, 0.22); s.g.z = lerp(s.g.z, gz, 0.22);
+      calc();
       s.last = performance.now();
       if (!s.got) { s.got = true; setTimeout(() => { s.zero(); s.onFirst && s.onFirst(); }, 450); }
     };
-    s.zero = function () { s.roll0 = s.roll; s.pitch0 = s.pitch; s.zeroed = true; };
+    s.zero = function () {
+      const n = Math.hypot(s.g.x, s.g.y, s.g.z) || 1;
+      const f = holdFrame(s.g.x / n, s.g.y / n);
+      s.frame = f != null ? f : (s.frame != null ? s.frame : screenAngle());
+      calc();
+      s.roll0 = s.roll; s.pitch0 = s.pitch; s.zeroed = true;
+      s.onFrame && s.onFrame(s.frame);
+    };
     s.live = function () { return s.got && performance.now() - s.last < 600; };
     s.rel = function () { return s.zeroed ? { r: s.roll - s.roll0, p: s.pitch - s.pitch0 } : { r: 0, p: 0 }; };
     return s;
@@ -400,7 +420,7 @@ window.TF = (function () {
     $('padStart').style.display = 'none';
     if (perm !== 'ok') toastPad('기울기 권한이 없어요 — 가운데를 드래그해서 조작할 수 있어요');
     setTimeout(() => { if (!tilt.got) { $('padStick').classList.add('show'); toastPad(window.isSecureContext ? '기울기 센서 신호가 없어요 — 가운데를 드래그해서 조작하세요' : 'https:// 주소가 아니라서 센서가 꺼져 있어요'); } }, 1800);
-    wanted = true; rot();
+    wanted = true;
     status('연결 중…', 'wait');
     connect();
   });
@@ -495,23 +515,40 @@ window.TF = (function () {
   const up = (e) => { e.preventDefault(); if (!fire.classList.contains('down')) return; fire.classList.remove('down'); send({ t: 'fu', hold: Math.round(performance.now() - holdStart) }); };
   fire.addEventListener('pointerup', up); fire.addEventListener('pointercancel', up);
   fire.addEventListener('contextmenu', (e) => e.preventDefault());
-  $('padZero').addEventListener('click', () => { tilt.zero(); send({ t: 'z' }); vib(20); toastPad('영점 완료'); });
+  $('padZero').addEventListener('click', () => { tilt.zero(); send({ t: 'z' }); vib(20); toastPad('영점 완료 — 지금 쥔 방향·자세가 기준이에요'); });
 
   // 센서가 없을 때: 가운데 영역 드래그 = 가상 조이스틱
   const area = $('padStick');
   area.addEventListener('pointerdown', (e) => { stick.on = true; stick.id = e.pointerId; stick.x0 = e.clientX; stick.y0 = e.clientY; try { area.setPointerCapture(e.pointerId); } catch (_) {} });
   area.addEventListener('pointermove', (e) => {
     if (!stick.on || e.pointerId !== stick.id) return;
-    stick.r = TF.clamp((e.clientX - stick.x0) / 3, -40, 40);
-    stick.p = TF.clamp((e.clientY - stick.y0) / 3, -40, 40);
+    // 화면을 돌려서 보여 주는 중이면 드래그 방향도 같이 돌려서 계산
+    const dx = e.clientX - stick.x0, dy = e.clientY - stick.y0, a = -stageDeg * TF.DEG;
+    stick.r = TF.clamp((dx * Math.cos(a) - dy * Math.sin(a)) / 3, -40, 40);
+    stick.p = TF.clamp((dx * Math.sin(a) + dy * Math.cos(a)) / 3, -40, 40);
     $('padKnob').style.transform = `translate(${stick.r * 2}px, ${stick.p * 2}px)`;
   });
   const sEnd = () => { stick.on = false; stick.r = stick.p = 0; $('padKnob').style.transform = ''; };
   area.addEventListener('pointerup', sEnd); area.addEventListener('pointercancel', sEnd);
 
-  function rot() { $('padRotate').style.display = wanted && innerHeight > innerWidth ? 'flex' : 'none'; }
-  addEventListener('resize', rot); rot();
-  window.__pad = { tilt, get conn() { return conn; }, get relay() { return relay; }, stick, p2p, viaRelay };
+  /* 화면이 자동으로 돌아가도(또는 세로 고정이어도) 컨트롤러 화면은 '쥔 방향' 기준으로 똑바로 보이게 돌려 줌 */
+  let stageDeg = 0;
+  function rot() {
+    const st = $('padStage');
+    let deg = 0;
+    if (tilt.frame != null) { deg = ((tilt.frame - TF.screenAngle()) % 360 + 540) % 360 - 180; }
+    const side = Math.abs(Math.abs(deg) - 90) < 1;
+    st.style.width = (side ? innerHeight : innerWidth) + 'px';
+    st.style.height = (side ? innerWidth : innerHeight) + 'px';
+    st.style.transform = `translate(-50%, -50%) rotate(${deg}deg)`;
+    stageDeg = deg;
+  }
+  tilt.onFrame = () => rot();
+  addEventListener('resize', () => setTimeout(rot, 50));
+  addEventListener('orientationchange', () => setTimeout(rot, 250));
+  if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', () => setTimeout(rot, 50));
+  rot();
+  window.__pad = { get stageDeg() { return stageDeg; }, tilt, get conn() { return conn; }, get relay() { return relay; }, stick, p2p, viaRelay };
 })();
 </script>
 <script>console.warn('Scripts "build/three.js" and "build/three.min.js" are deprecated with r150+, and will be removed with r160. Please use ES Modules or alternatives: https://threejs.org/docs/index.html#manual/en/introduction/Installation'),
