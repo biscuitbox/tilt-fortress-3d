@@ -137,18 +137,39 @@ body.playing #hostHud{display:block}
 @media (max-height:420px){#cStatus{font-size:15px}#cRead b{font-size:16px}.msg{font-size:22px}}
 
 /* ================= 메뉴 ================= */
-#menu{position:fixed;inset:0;z-index:50;align-items:safe center;justify-content:center;padding:18px;overflow-y:auto;touch-action:pan-y;background:radial-gradient(circle at 30% 20%,#1d3a5c,#0b1422)}
-#menuIn{max-width:980px;width:100%}
-#menuIn h1{font-size:34px;margin:0 0 4px}#menuIn .sub{opacity:.8;margin:0 0 18px}
-#mList{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.mBtn{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:8px;border:2px solid rgba(255,255,255,.2);background:#13233a;color:#fff;border-radius:18px;padding:18px;cursor:pointer;min-height:190px}
-.mBtn:hover{border-color:#ffd60a}
-.mBtn .ic{font-size:13px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:10px;background:#2f6fb5}
-.mBtn b{font-size:22px}.mBtn span{font-size:14px;opacity:.85;line-height:1.55}
-.mBtn small{font-size:12px;opacity:.65;line-height:1.5;margin-top:auto}
+#menuBg{position:fixed;inset:0;width:100%;height:100%;display:none;z-index:49;transition:opacity .7s;background:#0b1422}
+body.menu-mode #menuBg{display:block}
+#menu{position:fixed;inset:0;z-index:50;align-items:safe center;justify-content:center;padding:clamp(14px,3vw,60px);overflow-y:auto;touch-action:pan-y;
+  background:radial-gradient(ellipse at 50% 45%,rgba(8,14,24,.15) 0%,rgba(8,14,24,.55) 60%,rgba(8,14,24,.85) 100%)}
+#menuIn{width:min(94vw,1560px)}
+#mTitle{display:flex;align-items:center;gap:clamp(10px,1.6vw,30px);margin-bottom:clamp(14px,3vh,44px)}
+#mTitle .logo{width:clamp(70px,9vw,170px);flex:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));animation:bob 2.6s ease-in-out infinite}
+#mTitle h1{margin:0;font-size:clamp(38px,6.2vw,118px);line-height:1.02;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(180deg,#fff 30%,#ffe9a8);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 10px rgba(0,0,0,.55))}
+#mTitle h1 span{background:linear-gradient(180deg,#ffd60a,#ff8a3a);-webkit-background-clip:text;background-clip:text}
+#mTitle .sub{margin:clamp(4px,1vh,14px) 0 0;font-size:clamp(15px,1.7vw,30px);opacity:.92;text-shadow:0 2px 6px rgba(0,0,0,.7)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+#mList{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.6vw,32px)}
+.mBtn{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:clamp(6px,1vh,14px);border:2px solid rgba(255,255,255,.22);color:#fff;border-radius:clamp(16px,1.6vw,30px);
+  padding:clamp(16px,1.8vw,38px);cursor:pointer;min-height:clamp(200px,30vh,400px);background:rgba(16,30,52,.66);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  box-shadow:0 12px 40px rgba(0,0,0,.35);transition:transform .2s,border-color .2s,box-shadow .2s}
+.mBtn:hover,.mBtn:focus-visible{transform:translateY(-6px) scale(1.015);border-color:#ffd60a;box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 0 4px rgba(255,214,10,.25)}
+.mBtn .art{width:clamp(80px,8.5vw,170px);height:auto;margin-bottom:clamp(2px,.6vh,10px)}
+.mBtn .ic{font-size:clamp(12px,1vw,19px);font-weight:800;letter-spacing:1px;padding:.25em .8em;border-radius:10px;background:#2f6fb5}
+.mBtn b{font-size:clamp(22px,2.4vw,46px);line-height:1.15}.mBtn span{font-size:clamp(14px,1.25vw,24px);opacity:.88;line-height:1.55}
+.mBtn small{font-size:clamp(12px,.95vw,18px);opacity:.68;line-height:1.5;margin-top:auto}
 #mHost .ic{background:#e0533d}#mSolo .ic{background:#2ec27e}
-#menuIn .foot{font-size:12px;opacity:.65;margin-top:16px;line-height:1.6}
-@media (max-width:760px){#mList{grid-template-columns:1fr}.mBtn{min-height:0}#menuIn h1{font-size:26px}}
+#menuIn .foot{font-size:clamp(12px,.95vw,18px);opacity:.78;margin-top:clamp(12px,2.4vh,34px);line-height:1.7;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+@media (max-width:760px){#mList{grid-template-columns:1fr}.mBtn{min-height:0}.mBtn .art{display:none}}
+/* 큰 화면: 제목은 위, 버튼은 아래 → 가운데에서 탱크들이 싸우는 장면이 보이게 */
+@media (min-width:1000px) and (min-height:700px){
+  #menu{align-items:stretch;background:linear-gradient(180deg,rgba(8,14,24,.7) 0%,rgba(8,14,24,.05) 30%,rgba(8,14,24,.05) 55%,rgba(8,14,24,.75) 100%)}
+  #menuIn{display:flex;flex-direction:column;justify-content:flex-start;min-height:100%;margin:0 auto}
+  #mList{margin-top:auto}
+  .mBtn{min-height:clamp(200px,27vh,360px)}
+  #mTitle{margin-bottom:0}
+}
+@media (max-height:520px) and (min-width:761px){#mTitle .logo{width:60px}#mTitle h1{font-size:34px}#mTitle .sub{font-size:14px}.mBtn{min-height:0;padding:12px 14px}.mBtn .art{width:56px}.mBtn b{font-size:19px}.mBtn span{font-size:12.5px}#mTitle{margin-bottom:10px}}
 /* ================= 대기실 (공통) ================= */
 #lobbyIn{grid-template-columns:300px 1fr 280px}
 #lbHead{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -261,14 +282,24 @@ body.class-mode #cNum{display:block}
 <body>
 
 <!-- ===================== 시작 메뉴 ===================== -->
+<canvas id="menuBg"></canvas>
 <div id="menu">
   <div id="menuIn">
-    <h1>틸트 포트리스 3D</h1>
-    <p class="sub">폰을 기울여 조준하는 1인칭 포격 대전. 어떻게 할까요?</p>
+    <div id="mTitle">
+      <svg class="logo" viewBox="0 0 120 80" aria-hidden="true"><path d="M60 12 L74 32 L66 32 L66 44 L54 44 L54 32 L46 32 Z" fill="#ffd60a" transform="rotate(-28 60 40)"/><rect x="18" y="46" width="84" height="18" rx="5" fill="#3d8bff"/><rect x="12" y="60" width="96" height="12" rx="6" fill="#1c2b44"/><circle cx="26" cy="66" r="4" fill="#9fb3c8"/><circle cx="46" cy="66" r="4" fill="#9fb3c8"/><circle cx="66" cy="66" r="4" fill="#9fb3c8"/><circle cx="86" cy="66" r="4" fill="#9fb3c8"/><rect x="42" y="36" width="34" height="14" rx="5" fill="#2f6fb5"/><rect x="70" y="30" width="36" height="6" rx="3" fill="#1c2b44" transform="rotate(-28 70 33)"/></svg>
+      <div><h1>틸트 포트리스 <span>3D</span></h1>
+      <p class="sub">폰을 기울여 조준하는 1인칭 포격 대전 · 바람과 지형을 읽고 각도와 힘을 맞춰라!</p></div>
+    </div>
     <div id="mList">
-      <button class="mBtn" id="mPC"><span class="ic">PC 중계</span><b>큰 화면 + 여러 폰</b><span>PC·TV·전자칠판에 전체 상황을 띄우고, 각자 폰으로 QR을 찍어 참가해요.</span><small>수업·발표용 추천 · 최대 8명</small></button>
-      <button class="mBtn" id="mHost"><span class="ic">방장 폰</span><b>PC 없이 폰끼리</b><span>이 폰이 방을 만들고 나도 같이 플레이해요. 친구들은 이 폰의 QR을 찍어 참가해요.</span><small>방장 폰 화면이 꺼지거나 다른 앱으로 가면 게임이 멈춰요</small></button>
-      <button class="mBtn" id="mSolo"><span class="ic">혼자 연습</span><b>AI와 대결</b><span>인터넷 없이 이 기기 하나로 AI 탱크와 싸우거나 표적을 맞혀요.</span><small>조작 연습·테스트용</small></button>
+      <button class="mBtn" id="mPC">
+        <svg class="art" viewBox="0 0 120 80" aria-hidden="true"><rect x="10" y="6" width="74" height="48" rx="5" fill="#1c2b44" stroke="#9fd3f0" stroke-width="3"/><path d="M20 44 Q35 26 50 40 T76 36 L76 48 L20 48 Z" fill="#5c9a3e"/><rect x="40" y="56" width="14" height="8" fill="#9fd3f0"/><rect x="30" y="64" width="34" height="4" rx="2" fill="#9fd3f0"/><rect x="88" y="26" width="14" height="24" rx="3" fill="#ff9f1a"/><rect x="96" y="40" width="14" height="24" rx="3" fill="#b05cff"/><rect x="80" y="50" width="14" height="24" rx="3" fill="#2ec27e"/></svg>
+        <span class="ic">PC 중계</span><b>큰 화면 + 여러 폰</b><span>PC·TV·전자칠판에 전체 상황을 띄우고, 각자 폰으로 QR을 찍어 참가해요.</span><small>수업·발표용 추천 · 최대 8명</small></button>
+      <button class="mBtn" id="mHost">
+        <svg class="art" viewBox="0 0 120 80" aria-hidden="true"><rect x="44" y="10" width="30" height="56" rx="6" fill="#1c2b44" stroke="#ffd60a" stroke-width="3"/><path d="M50 6 L54 0 L59 6 L64 0 L68 6 Z" fill="#ffd60a"/><rect x="12" y="26" width="22" height="40" rx="5" fill="#ff5ca8"/><rect x="86" y="26" width="22" height="40" rx="5" fill="#18c6d6"/><path d="M36 46 H42 M78 46 H84" stroke="#fff" stroke-width="3" stroke-dasharray="3 3"/></svg>
+        <span class="ic">방장 폰</span><b>PC 없이 폰끼리</b><span>이 폰이 방을 만들고 나도 같이 플레이해요. 친구들은 이 폰의 QR을 찍어 참가해요.</span><small>방장 폰 화면이 꺼지거나 다른 앱으로 가면 게임이 멈춰요</small></button>
+      <button class="mBtn" id="mSolo">
+        <svg class="art" viewBox="0 0 120 80" aria-hidden="true"><rect x="14" y="14" width="30" height="56" rx="6" fill="#1c2b44" stroke="#2ec27e" stroke-width="3"/><rect x="66" y="22" width="40" height="34" rx="8" fill="#c0443a"/><circle cx="78" cy="38" r="5" fill="#fff"/><circle cx="94" cy="38" r="5" fill="#fff"/><rect x="76" y="48" width="20" height="3" rx="1.5" fill="#fff"/><path d="M86 22 V12" stroke="#c0443a" stroke-width="3"/><circle cx="86" cy="10" r="4" fill="#ffd60a"/><path d="M50 42 L60 42" stroke="#fff" stroke-width="3"/><path d="M56 37 L61 42 L56 47" stroke="#fff" stroke-width="3" fill="none"/></svg>
+        <span class="ic">혼자 연습</span><b>AI와 대결</b><span>인터넷 없이 이 기기 하나로 AI 탱크와 싸우거나 표적을 맞혀요.</span><small>조작 연습·테스트용</small></button>
     </div>
     <div class="foot">· 기울기 조준은 https:// 주소(GitHub Pages 등)에서만 켜져요. 센서가 없으면 화면 드래그나 키보드(방향키·스페이스)로 할 수 있어요.<br>· 폰을 가로로 핸들처럼 쥐고, 좌우로 기울이면 포탑 회전 · 폰을 세우면 포신이 올라가요.</div>
   </div>
@@ -1292,6 +1323,160 @@ TF.createWorld = function (renderer, opts) {
     makeTank, updateTanks, dig, explode, splash, muzzle, updateFx, makeShellMesh, makeTrail,
     drawMini, projectLabel, render, setSize, dispose, fpGroup, setOverview, addCrate, removeCrate, crates, dirtFx, map: MAP,
     get shake() { return shake; }, set shake(v) { shake = v; },
+  };
+};
+})();
+
+</script>
+<script>
+'use strict';
+/* ==========================================================
+   첫 화면 배경 데모: 섬 위에서 탱크들이 돌아다니며 서로 포격하는 장면
+   - 진짜 게임 코드(지형·탱크·폭발)를 그대로 써서 그림. 소리 없음, 피해 없음
+   - 모드를 고르면 stop()으로 정리
+   ========================================================== */
+(function () {
+const { DEG, clamp, lerp } = TF;
+TF.startAttract = function (canvas) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  const MAPS = ['island', 'desert', 'snow'];
+  let mapIdx = Math.floor(Math.random() * 3), W = null, tanks = [], shells = [], running = true, raf = 0;
+  let mapT = 0, shotT = 1.2, digs = 0;
+  const cam = { a: Math.random() * 6, pos: new THREE.Vector3(), look: new THREE.Vector3(), follow: null, hold: 0 };
+  const _v = new THREE.Vector3(), _d = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+
+  function build() {
+    if (W) W.dispose();
+    shells = []; digs = 0;
+    const seed = Math.floor(Math.random() * 1e9), n = 6;
+    const spawns = TF.spawnPoints(n, seed);
+    W = TF.createWorld(renderer, { seed, spawns, map: MAPS[mapIdx % 3] });
+    tanks = spawns.map((sp, i) => {
+      const t = W.makeTank(TF.COLORS[i], false);
+      t.root.position.set(sp.x, 0, sp.z); t.setAim(sp.yaw, 15 + Math.random() * 20);
+      t.head = sp.yaw; t.root.rotation.y = -t.head * DEG; t.speed = 0; t.driveT = Math.random() * 3; t.aimTo = { yaw: sp.yaw, elev: 20 };
+      return t;
+    });
+    fit();
+    cam.pos.set(Math.cos(cam.a) * 210, 85, Math.sin(cam.a) * 210); cam.look.set(0, 8, 0); cam.follow = null;
+  }
+  // 포탄이 상대에게 닿을 만한 파워 찾기 (바람 없음, 몇 번만 계산)
+  function solve(t, target, elev) {
+    const dx = target.root.position.x - t.root.position.x, dz = target.root.position.z - t.root.position.z, dist = Math.hypot(dx, dz);
+    const yaw = Math.atan2(dx, -dz) / DEG;
+    let lo = 10, hi = 100, pw = 60;
+    for (let k = 0; k < 9; k++) {
+      pw = (lo + hi) / 2;
+      const p = TF.muzzlePos(t.root.position.x, t.root.position.z, W.heightAt(t.root.position.x, t.root.position.z), yaw, elev, new THREE.Vector3());
+      const sh = { pos: p, vel: TF.aimDir(yaw, elev, new THREE.Vector3()).multiplyScalar(TF.CFG.maxSpeed * pw / 100), t: 0 };
+      for (let i = 0; i < 2400 && !TF.stepShell(sh, { x: 0, z: 0 }, W.heightAt); i++);
+      if (Math.hypot(sh.pos.x - t.root.position.x, sh.pos.z - t.root.position.z) < dist) lo = pw; else hi = pw;
+    }
+    return { yaw: yaw + (Math.random() - 0.5) * 4, pw: pw * (0.94 + Math.random() * 0.12) };
+  }
+  function planShot() {
+    const t = tanks[Math.floor(Math.random() * tanks.length)];
+    let o = t; while (o === t) o = tanks[Math.floor(Math.random() * tanks.length)];
+    const elev = 35 + Math.random() * 22, s = solve(t, o, elev);
+    t.aimTo = { yaw: s.yaw, elev }; t.fireAt = performance.now() + 900; t.firePw = s.pw;
+  }
+  function fire(t) {
+    const p = TF.muzzlePos(t.root.position.x, t.root.position.z, W.heightAt(t.root.position.x, t.root.position.z), t.aimTo.yaw, t.aimTo.elev, new THREE.Vector3());
+    const v = TF.aimDir(t.aimTo.yaw, t.aimTo.elev, new THREE.Vector3()).multiplyScalar(TF.CFG.maxSpeed * t.firePw / 100);
+    const sh = { pos: p, vel: v, t: 0, acc: 0, mesh: W.makeShellMesh(t.color), trail: W.makeTrail(t.color, 0.8), pts: [p.clone()] };
+    shells.push(sh);
+    W.muzzle(p, v.clone().normalize());
+    if (!cam.follow && Math.random() < 0.55) { cam.follow = sh; cam.hold = 0; }   // 가끔 포탄을 따라감
+  }
+
+  function frame(nt) {
+    if (!running) return;
+    raf = requestAnimationFrame(frame);
+    if (document.hidden) return;
+    const dt = Math.min(0.05, (nt - (frame.prev || nt)) / 1000); frame.prev = nt;
+    mapT += dt;
+    if (mapT > 42) { mapT = 0; mapIdx++; canvas.style.opacity = 0; setTimeout(() => { if (running) { build(); canvas.style.opacity = 1; } }, 700); }
+    // 탱크: 천천히 돌아다니고 포탑을 돌림
+    for (const t of tanks) {
+      t.driveT -= dt;
+      if (t.driveT <= 0) { t.driveT = 2 + Math.random() * 4; t.speed = Math.random() < 0.6 ? (Math.random() < 0.8 ? 4 : -3) : 0; t.turn = (Math.random() - 0.5) * 40; }
+      t.head += (t.turn || 0) * dt * (t.speed ? 1 : 0);
+      if (t.speed) {
+        const p = t.root.position, y = t.head * DEG;
+        const nx = p.x + Math.sin(y) * t.speed * dt, nz = p.z - Math.cos(y) * t.speed * dt;
+        if (W.heightAt(nx, nz) > 1.5 && Math.hypot(nx, nz) < 140 && tanks.every((o) => o === t || Math.hypot(o.root.position.x - nx, o.root.position.z - nz) > 7)) { p.x = nx; p.z = nz; }
+        else { t.speed = -t.speed * 0.5; t.turn = 90; }
+      }
+      t.root.rotation.y = -t.head * DEG;
+      // 포탑은 세상 기준 방향(wyaw)으로 돌리고, 몸체가 돈 만큼 빼서 넘김
+      t.wyaw = t.wyaw == null ? t.aimTo.yaw : t.wyaw;
+      const dy = ((((t.aimTo.yaw - t.wyaw) % 360) + 540) % 360) - 180;
+      t.wyaw += clamp(dy, -60 * dt, 60 * dt);
+      t.setAim(t.wyaw - t.head, lerp(t.elev, t.aimTo.elev, Math.min(1, dt * 2)));
+      if (t.fireAt && performance.now() > t.fireAt) { t.fireAt = 0; fire(t); }
+    }
+    shotT -= dt;
+    if (shotT <= 0) { shotT = 1.4 + Math.random() * 1.8; planShot(); }
+    // 포탄
+    for (let i = shells.length - 1; i >= 0; i--) {
+      const sh = shells[i]; sh.acc += dt;
+      let hit = null;
+      while (sh.acc >= TF.CFG.physDt && !hit) { sh.acc -= TF.CFG.physDt; hit = TF.stepShell(sh, { x: 0, z: 0 }, W.heightAt); }
+      sh.mesh.position.copy(sh.pos);
+      if (sh.pts[sh.pts.length - 1].distanceToSquared(sh.pos) > 3) { sh.pts.push(sh.pos.clone()); sh.trail.set(sh.pts); }
+      if (hit) {
+        W.scene.remove(sh.mesh); const tr = sh.trail; setTimeout(() => tr.remove(), 1800);
+        if (hit === 'ground') { W.explode(sh.pos.clone(), 1); if (digs++ < 30) W.dig(sh.pos.x, sh.pos.z, 5, 1.6); }
+        else if (hit === 'water') W.splash(sh.pos.clone());
+        shells.splice(i, 1);
+        if (cam.follow === sh) { cam.follow = null; cam.hold = 1.6; cam.holdAt = sh.pos.clone(); }
+      }
+    }
+    // 카메라: 천천히 섬을 돌다가, 가끔 포탄을 따라감
+    cam.a += dt * 0.06;
+    let want, look;
+    if (cam.follow) {
+      const sh = cam.follow;
+      want = _v.copy(sh.pos).addScaledVector(_d.copy(sh.vel).setY(0).normalize(), -26).add(new THREE.Vector3(0, 9, 0));
+      look = sh.pos;
+    } else if (cam.hold > 0) {
+      cam.hold -= dt; want = cam.pos.clone(); look = cam.holdAt;
+    } else {
+      want = _v.set(Math.cos(cam.a) * 200, 100 + Math.sin(cam.a * 1.7) * 16, Math.sin(cam.a) * 200);
+      look = new THREE.Vector3(0, 2, 0);
+    }
+    want.y = Math.max(want.y, W.heightAt(want.x, want.z) + 4);
+    cam.pos.lerp(want, 1 - Math.exp(-dt * (cam.follow ? 4 : 1.2)));
+    cam.look.lerp(look, 1 - Math.exp(-dt * (cam.follow ? 6 : 1.5)));
+    W.camera.position.copy(cam.pos); W.camera.lookAt(cam.look);
+    W.setOverview(false);
+    W.updateTanks(dt);
+    for (const t of tanks) {     // 몸체가 돌아가 있으니 경사 기울기도 몸체 기준으로 다시 맞춤
+      const p = t.root.position;
+      W.normalAt(p.x, p.z, _d).applyAxisAngle(UP, t.head * DEG);
+      t.hull.quaternion.setFromUnitVectors(UP, _d);
+    }
+    W.updateFx(dt);
+    W.render();
+  }
+  // 큰 화면에선 버튼이 아래쪽을 가리니, 장면을 위로 올려 제목과 버튼 사이에 보이게
+  function fit() {
+    if (!W) return;
+    const w = innerWidth, h = innerHeight;
+    W.setSize(w, h);
+    if (w >= 1000 && h >= 700) W.camera.setViewOffset(w, h, 0, h * 0.17, w, h); else W.camera.clearViewOffset();
+  }
+  const onResize = () => fit();
+  addEventListener('resize', onResize);
+  build();
+  raf = requestAnimationFrame(frame);
+  return {
+    stop() {
+      running = false; cancelAnimationFrame(raf); removeEventListener('resize', onResize);
+      try { W && W.dispose(); renderer.dispose(); renderer.forceContextLoss(); } catch (_) {}
+      canvas.style.display = 'none';
+    },
   };
 };
 })();
@@ -3041,8 +3226,10 @@ if (/^#(join|pad)/.test(location.hash)) runJoin();
 else {
   document.body.classList.add('menu-mode');
   $('menu').style.display = 'flex';
+  let attract = null;
+  try { attract = TF.startAttract($('menuBg')); } catch (e) { console.warn('배경 데모를 띄우지 못했어요', e); }
   if (coarse) $('mHost').parentNode.insertBefore($('mHost'), $('mPC'));   // 폰이면 방장 폰 모드를 위로
-  const go = (f) => () => { $('menu').style.display = 'none'; document.body.classList.remove('menu-mode'); f(); };
+  const go = (f) => () => { if (attract) { attract.stop(); attract = null; } $('menu').style.display = 'none'; document.body.classList.remove('menu-mode'); f(); };
   $('mPC').onclick = go(runPC);
   $('mHost').onclick = go(() => runLocal('host'));
   $('mSolo').onclick = go(() => runLocal('solo'));
